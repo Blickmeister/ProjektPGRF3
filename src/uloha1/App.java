@@ -25,14 +25,12 @@ public class App {
 
     int width, height;
 
-    int vertexBuffer, indexBuffer;
-
     // The window handle
     private long window;
 
     OGLBuffers buffers;
 
-    int shaderProgram, locTime, locMath;
+    int shaderProgram, locMath;
 
     float time = 0;
     Mat4 mvp = new Mat4Identity();
@@ -130,20 +128,6 @@ public class App {
     }
 
     void createBuffers() {
-        /*float[] vertexBufferData = {
-                -50, -50, 	0.7f, 0, 0,
-                1,  50,		0, 0.7f, 0,
-                0,  50,		0, 0, 0.7f
-        };
-        int[] indexBufferData = { 0, 1, 2 };
-
-        // vertex binding description, concise version
-        OGLBuffers.Attrib[] attributes = {
-                new OGLBuffers.Attrib("inPosition", 2), // 2 floats
-                new OGLBuffers.Attrib("inColor", 3) // 3 floats
-        };
-        buffers = new OGLBuffers(vertexBufferData, attributes,
-                indexBufferData);*/
 
         BufferGenerator buf = new BufferGenerator();
 
@@ -154,7 +138,7 @@ public class App {
         buf.createIndexBuffer(m , n);
 
         float[] vertexBufferData = buf.getVertexBufferData();
-        short[] indexBufferData = buf.getIndexBufferData();
+        int[] indexBufferData = buf.getIndexBufferData();
 
         /*for(int j = 0; j < vertexBufferData.length; j+=8) {
             for (int i = j; i < m * 2 + j; i++) {
@@ -168,52 +152,13 @@ public class App {
             System.out.print(indexBufferData[i] + "  ");
         }
 
-        // create buffer required for sending data to a native library
-        FloatBuffer vertexBufferBuffer = (FloatBuffer) BufferUtils.createFloatBuffer(vertexBufferData.length)
-                .put(vertexBufferData).rewind();
-
-        vertexBuffer = glGenBuffers();
-        glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
-        glBufferData(GL_ARRAY_BUFFER, vertexBufferBuffer, GL_STATIC_DRAW);
-
-        // create and fill index buffer data (element buffer in OpenGL terminology)
-
-        // create buffer required for sending data to a native library
-        ShortBuffer indexBufferBuffer = (ShortBuffer) BufferUtils.createShortBuffer(indexBufferData.length)
-                .put(indexBufferData).rewind();
-
-        indexBuffer = glGenBuffers();
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexBufferBuffer,
-                GL_STATIC_DRAW);
-
-        // the concise version requires attributes to be in this order within
-        // vertex and to be exactly all floats within vertex
-
-/*		full version for the case that some floats of the vertex are to be ignored
- * 		(in this case it is equivalent to the concise version):
- 		OGLBuffers.Attrib[] attributes = {
-				new OGLBuffers.Attrib("inPosition", 2, 0), // 2 floats, at 0 floats from vertex start
-				new OGLBuffers.Attrib("inColor", 3, 2) }; // 3 floats, at 2 floats from vertex start
-		buffers = new OGLBuffers(gl, vertexBufferData, 5, // 5 floats altogether in a vertex
-				attributes, indexBufferData);
-*/
-    }
-
-    void bindBuffers() {
-        // internal OpenGL ID of a vertex shader input variable
-        int locPosition = glGetAttribLocation(shaderProgram, "inPosition");
-
-        glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
-        // bind the shader variable to specific part of vertex data (attribute)
-        // - describe how many components of which type correspond to it in the
-        // data, how large is one vertex (its stride in bytes) and at which byte
-        // of the vertex the first component starts
-        // 2 components, of type float, do not normalize (convert to [0,1]),
-        // vertex of 8 bytes, start at the beginning (byte 0)
-        glVertexAttribPointer(locPosition, 2, GL_FLOAT, false, 8, 0);
-        glEnableVertexAttribArray(locPosition);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
+        // vertex binding description, concise version
+        OGLBuffers.Attrib[] attributes = {
+                new OGLBuffers.Attrib("inPosition", 2), // 2 floats
+                //new OGLBuffers.Attrib("inColor", 3) // 3 floats
+        };
+        buffers = new OGLBuffers(vertexBufferData, attributes,
+                indexBufferData);
     }
 
     private void loop() {
@@ -230,16 +175,16 @@ public class App {
             glUseProgram(shaderProgram);
             // to use the default shader of the "fixed pipeline", call
             // glUseProgram(0);
-            time += 0.1;
+            time += 0.01;
             glUniformMatrix4fv(locMath, false, mvp.mul(new Mat4RotX(time)).floatArray());
             //glUniform1f(locTime, time); // correct shader must be set before this
 
             // bind and draw
             //buffers.draw(GL_TRIANGLES, shaderProgram);
 
-            bindBuffers();
-            // draw
-            glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_SHORT, 0);
+            glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
+            // bind and draw
+            buffers.draw(GL_TRIANGLES, shaderProgram);
 
             glfwSwapBuffers(window); // swap the color buffers
 

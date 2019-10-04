@@ -1,17 +1,15 @@
 package uloha1;
 
-import lwjglutils.OGLBuffers;
-
 public class BufferGenerator {
 
     float[] vertexBufferData = {};
-    short[] indexBufferData = {};
+    int[] indexBufferData = {};
 
     public float[] getVertexBufferData() {
         return vertexBufferData;
     }
 
-    public short[] getIndexBufferData() {
+    public int[] getIndexBufferData() {
         return indexBufferData;
     }
 
@@ -39,32 +37,37 @@ public class BufferGenerator {
         }
     }
 
-
-    /*for(int i = 0; i < n; i++)
-    {
-     for(int j = 0; j < m; j++) {
-
-     }
-    }*/
-
-
     public void createIndexBuffer(int m, int n) {
         // 0,5,6,0,6,1,1,6,7,1,7,2,2,7,8,2,8,3,3,8,9,3,9,4....
 
-        indexBufferData = new short[6*m*m];
+        /*indexBufferData = new int[6*m*m];
         int i = 0;
-        short k;
+        int k;
         for(int y = 0; y < n; y++) {
             for(int x = 0; x < m ; x++) {
-                k = (short) (x + y*(m+1));
+                k = x + y*(m+1);
                 indexBufferData[i++] = k;
-                indexBufferData[i++] = (short) (k + (m+1));
-                indexBufferData[i++] = (short) (k + (m+1)+1);
+                indexBufferData[i++] = k + (m+1);
+                indexBufferData[i++] = k + (m+1)+1;
                 indexBufferData[i++] = k;
-                indexBufferData[i++] = (short) (k + (m+1)+1);
-                indexBufferData[i++] = (short) (k + 1);
+                indexBufferData[i++] = k + (m+1)+1;
+                indexBufferData[i++] = k + 1;
             }
 
+        }*/
+        indexBufferData = new int[6*(m-1)*(n-1)];
+        int i = 0;
+        int k;
+        for(int y = 0; y < n - 1; y++) {
+            for(int x = 0; x < m - 1; x++) {
+                k = x + y*m;
+                indexBufferData[i++] = k;
+                indexBufferData[i++] = k + 1;
+                indexBufferData[i++] = k + (m+1);
+                indexBufferData[i++] = k;
+                indexBufferData[i++] = k + (m+1);
+                indexBufferData[i++] = k + m;
+            }
         }
     }
 }
