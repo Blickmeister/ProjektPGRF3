@@ -229,7 +229,7 @@ public class Renderer extends AbstractRenderer{
 		createBuffers();
 
 		shaderProgram = ShaderUtils.loadProgram("/uloha1/start.vert",
-				"/lvl1basic/p01start/start.frag",
+				"/uloha1/start.frag",
 				null,null,null,null);
 
 		// Shader program set
