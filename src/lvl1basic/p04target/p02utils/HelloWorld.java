@@ -314,7 +314,9 @@ public class HelloWorld {
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
 			
 			// set the current shader to be used
-			glUseProgram(shaderProgram); 
+			glUseProgram(shaderProgram);
+
+			glEnable(GL_DEPTH_TEST);
 			
 			// set our render target (texture)
 			renderTarget.bind();

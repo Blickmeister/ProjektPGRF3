@@ -2,7 +2,12 @@
 in vec2 inPosition; // input from the vertex buffer
 out vec3 color;
 out vec3 normal_IO;
-uniform mat4 MVP;
+out vec3 lightDir;
+uniform mat4 model;
+uniform mat4 view;
+uniform mat4 proj;
+out vec2 posIO;
+//uniform mat4 matMV;
 
 float getFValue(vec2 xy){
 	return -(xy.x*xy.x*5+xy.y*xy.y*5);
@@ -19,11 +24,19 @@ vec3 getNormal(vec2 xy){
 
 
 void main() {
+	vec3 light = vec3(10);
 	vec2 position = inPosition;
+
+	posIO = inPosition;
+
 	position.xy -= 0.5;
 	float z = getFValue(position.xy);
+	vec4 objectPos = vec4(position.x, z, position.y, 1.0);
+
+	lightDir = light - (model*objectPos).xyz;
 	vec3 normal = normalize(getNormal(position.xy));
+	normal =  inverse(transpose(mat3(model*view)))*normal;
 	normal_IO = normal;
 	color = vec3(normal);
-	gl_Position = MVP*vec4(position.x, z, position.y, 1.0);
+	gl_Position = proj*view*model*objectPos;
 } 

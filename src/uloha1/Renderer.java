@@ -32,6 +32,8 @@ public class Renderer extends AbstractRenderer{
 	boolean mouseButton1 = false;
 
 	OGLBuffers buffers;
+	OGLTexture2D texture;
+	OGLTexture.Viewer textureViewer;
 
 	int shaderProgram, locMat, locHeight;
 
@@ -41,16 +43,13 @@ public class Renderer extends AbstractRenderer{
 	private long window;
 
 
-	int  locMath;
+	int  locMathModel, locMathView, locMathProj;
 
 	float time = 0;
-	Mat4 mvp = new Mat4Identity();
 
 
 	Camera cam = new Camera();
 	Mat4 proj = new Mat4PerspRH(Math.PI / 4, 1, 0.01, 1000.0);
-
-	OGLTexture2D.Viewer textureViewer;
 
 	private GLFWKeyCallback   keyCallback = new GLFWKeyCallback() {
 		@Override
@@ -235,10 +234,20 @@ public class Renderer extends AbstractRenderer{
 		// Shader program set
 		glUseProgram(this.shaderProgram);
 
+		try {
+			texture = new OGLTexture2D("textures/globe.jpg");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		textureViewer = new OGLTexture2D.Viewer();
+
 		// internal OpenGL ID of a shader uniform (constant during one draw call
 		// - constant value for all processed vertices or pixels) variable
 		//locTime = glGetUniformLocation(shaderProgram, "time");
-		locMath = glGetUniformLocation(shaderProgram, "MVP");
+		locMathModel = glGetUniformLocation(shaderProgram, "model");
+		locMathView = glGetUniformLocation(shaderProgram, "view");
+		locMathProj = glGetUniformLocation(shaderProgram, "proj");
 		cam = cam.withPosition(new Vec3D(5, 5, 2.5))
 				.withAzimuth(Math.PI * 1.25)
 				.withZenith(Math.PI * -0.125);
@@ -256,15 +265,23 @@ public class Renderer extends AbstractRenderer{
 		// to use the default shader of the "fixed pipeline", call
 		// glUseProgram(0);
 		time += 0.01;
-		glUniformMatrix4fv(locMath, false, new Mat4RotX(time).mul(cam.getViewMatrix().mul(proj)).floatArray());
+		glUniformMatrix4fv(locMathModel, false, new Mat4RotX(time).floatArray());
+
+		glUniformMatrix4fv(locMathView, false, cam.getViewMatrix().floatArray());
+
+		glUniformMatrix4fv(locMathProj, false, proj.floatArray());
 		//glUniform1f(locTime, time); // correct shader must be set before this
 
 		// bind and draw
 		//buffers.draw(GL_TRIANGLES, shaderProgram);
 
-		glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
+		texture.bind(shaderProgram, "textureID",0);
+
+		glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
 		// bind and draw
 		buffers.draw(GL_TRIANGLES, shaderProgram);
+
+		textureViewer.view(texture);
 
 
 	}
