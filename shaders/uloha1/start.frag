@@ -11,6 +11,6 @@ void main() {
 	//outColor = vec4(1.0, 1.0, 1.0, 1.0);
 	//outColor = vec4(color, 1.0);
 	outColor = vec4(vec3(cosAlpha),1.0);
-	outColor = vec4(texture(textureID,posIO).rgb,1.0);
+	//outColor = vec4(texture(textureID,posIO).rgb,1.0);
 }
 

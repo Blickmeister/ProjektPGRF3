@@ -167,6 +167,7 @@ public class Renderer extends AbstractRenderer{
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			System.out.println("ses v prdeli");
 		}
 		
 		OGLTexImageFloat texImageIn; 
@@ -248,7 +249,7 @@ public class Renderer extends AbstractRenderer{
 		if (compute || continues) {
 			compute = false;
 			
-			glBindImageTexture(0, textureIn.getTextureId(), 0, false, 0, 
+			glBindImageTexture(0, textureIn.getTextureId(), 0, false, 0,
 					GL_READ_ONLY, GL_RGBA32F);
 			glBindImageTexture(1, textureOut.getTextureId(), 0, false, 0, 
 					GL_WRITE_ONLY, GL_RGBA32F);

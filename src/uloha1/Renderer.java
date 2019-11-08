@@ -35,7 +35,7 @@ public class Renderer extends AbstractRenderer{
 	OGLTexture2D texture;
 	OGLTexture.Viewer textureViewer;
 
-	int shaderProgram, locMat, locHeight;
+	int shaderProgram, shaderProgram2, locMat, locHeight, locObjectType, locObjectType2;
 
 	int width, height;
 
@@ -43,9 +43,12 @@ public class Renderer extends AbstractRenderer{
 	private long window;
 
 
-	int  locMathModel, locMathView, locMathProj;
+	int  locMathModel, locMathView, locMathProj, locTime;
 
 	float time = 0;
+
+	int switchShaderProgram = 0;
+	int switchObject = 0;
 
 
 	Camera cam = new Camera();
@@ -83,7 +86,18 @@ public class Renderer extends AbstractRenderer{
 						cam = cam.mulRadius(0.9f);
 						break;
 					case GLFW_KEY_F:
-						cam = cam.mulRadius(1.1f);
+						if(switchShaderProgram == 1) {
+							switchShaderProgram = 0;
+						} else {
+							switchShaderProgram++;
+						}
+						break;
+					case GLFW_KEY_G:
+						if(switchObject == 1) {
+							switchObject = 0;
+						} else {
+							switchObject++;
+						}
 						break;
 				}
 			}
@@ -186,8 +200,8 @@ public class Renderer extends AbstractRenderer{
 
 		BufferGenerator buf = new BufferGenerator();
 
-		int m = 10;
-		int n = 10;
+		int m = 100;
+		int n = 100;
 
 		buf.createVertexBuffer(m, n);
 		buf.createIndexBuffer(m , n);
@@ -231,23 +245,35 @@ public class Renderer extends AbstractRenderer{
 				"/uloha1/start.frag",
 				null,null,null,null);
 
+		shaderProgram2 = ShaderUtils.loadProgram("/uloha1/phong.vert",
+				"/uloha1/phong.frag",
+				null,null,null,null);
+
 		// Shader program set
 		glUseProgram(this.shaderProgram);
 
-		try {
+		// pridani textury
+		/*try {
 			texture = new OGLTexture2D("textures/globe.jpg");
 		} catch (IOException e) {
 			e.printStackTrace();
-		}
+		}*/
 
-		textureViewer = new OGLTexture2D.Viewer();
+		// pomocny nahled textury
+		//textureViewer = new OGLTexture2D.Viewer();
 
 		// internal OpenGL ID of a shader uniform (constant during one draw call
 		// - constant value for all processed vertices or pixels) variable
-		//locTime = glGetUniformLocation(shaderProgram, "time");
+		locTime = glGetUniformLocation(shaderProgram2, "time");
 		locMathModel = glGetUniformLocation(shaderProgram, "model");
 		locMathView = glGetUniformLocation(shaderProgram, "view");
 		locMathProj = glGetUniformLocation(shaderProgram, "proj");
+		if(switchShaderProgram == 0) {
+
+		}
+		locObjectType = glGetUniformLocation(shaderProgram, "objectType");
+		locObjectType2 = glGetUniformLocation(shaderProgram2, "objectType");
+
 		cam = cam.withPosition(new Vec3D(5, 5, 2.5))
 				.withAzimuth(Math.PI * 1.25)
 				.withZenith(Math.PI * -0.125);
@@ -261,7 +287,20 @@ public class Renderer extends AbstractRenderer{
 
 		// set the current shader to be used, could have been done only once (in
 		// init) in this sample (only one shader used)
-		glUseProgram(shaderProgram);
+		switch(switchShaderProgram) {
+			case 0:
+				glUseProgram(shaderProgram);
+				locMathModel = glGetUniformLocation(shaderProgram, "model");
+				locMathView = glGetUniformLocation(shaderProgram, "view");
+				locMathProj = glGetUniformLocation(shaderProgram, "proj");
+				break;
+			case 1:
+				glUseProgram(shaderProgram2);
+				locMathModel = glGetUniformLocation(shaderProgram2, "model");
+				locMathView = glGetUniformLocation(shaderProgram2, "view");
+				locMathProj = glGetUniformLocation(shaderProgram2, "proj");
+				break;
+		}
 		// to use the default shader of the "fixed pipeline", call
 		// glUseProgram(0);
 		time += 0.01;
@@ -270,18 +309,48 @@ public class Renderer extends AbstractRenderer{
 		glUniformMatrix4fv(locMathView, false, cam.getViewMatrix().floatArray());
 
 		glUniformMatrix4fv(locMathProj, false, proj.floatArray());
-		//glUniform1f(locTime, time); // correct shader must be set before this
+		glUniform1f(locTime, time); // correct shader must be set before this
 
 		// bind and draw
 		//buffers.draw(GL_TRIANGLES, shaderProgram);
 
-		texture.bind(shaderProgram, "textureID",0);
+		//texture.bind(shaderProgram, "textureID",0);
 
 		glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
-		// bind and draw
-		buffers.draw(GL_TRIANGLES, shaderProgram);
 
-		textureViewer.view(texture);
+		if(switchShaderProgram == 0) {
+			glUniform1i(locObjectType, 0);
+
+			// bind and draw
+			buffers.draw(GL_TRIANGLES, shaderProgram);
+
+			glUniform1i(locObjectType, 1);
+
+			// bind and draw
+			buffers.draw(GL_TRIANGLES, shaderProgram);
+		} else {
+			glUniform1i(locObjectType2, 0);
+
+			// bind and draw
+			buffers.draw(GL_TRIANGLES, shaderProgram2);
+
+			glUniform1i(locObjectType2, 1);
+
+			// bind and draw
+			buffers.draw(GL_TRIANGLES, shaderProgram2);
+		}
+
+		glUniform1i(locObjectType, 0);
+
+		// bind and draw
+		buffers.draw(GL_TRIANGLES, shaderProgram2);
+
+		glUniform1i(locObjectType, 1);
+
+		// bind and draw
+		buffers.draw(GL_TRIANGLES, shaderProgram2);
+
+		//textureViewer.view(texture);
 
 
 	}
